@@ -166,6 +166,48 @@ printf("TODO: %s:%d\n", __FILE__, __LINE__);
     }
 }
 
+void image_filter(CFloatImage &rsltImage, CFloatImage &srcImage,
+                  const double* kernel, int knlWidth, int knlHeight,
+                  double scale, double offset)
+{
+	int imgHeight=srcImage.Shape().height;
+	int imgWidth= srcImage.Shape().width;
+    // Note: copying origImg to rsltImg is NOT the solution, it does nothing!
+    int x, y;
+    for(y=0;y<imgHeight;y++){
+        for (x=0;x<imgWidth;x++){
+			pixel_filter(&rsltImage.Pixel(x,y,1),x,y,srcImage,kernel,knlWidth,knlHeight,scale,offset);
+        }
+    }
+
+//printf("TODO: %s:%d\n", __FILE__, __LINE__); 
+
+}
+
+void pixel_filter(float* rsltPixel, int x, int y, CFloatImage &srcImage,
+                  const double* kernel, int knlWidth, int knlHeight,
+                  double scale, double offset)
+{
+	int u, v; 
+	int row, col;
+	*rsltPixel=0;
+
+	int imgHeight=srcImage.Shape().height;
+	int imgWidth= srcImage.Shape().width;
+
+
+	for(u=-knlHeight/2;u<=knlHeight/2;u++)
+			for(v=-knlWidth/2;v<=knlWidth/2;v++)
+			{
+				row=u+y;
+				col=v+x;
+				if(row>=0&&col>=0&&row<imgHeight&&col<imgWidth)
+				{
+				*rsltPixel+=srcImage.Pixel(row,col,1)*kernel[(u+knlWidth/2)*knlWidth+v+knlHeight/2];
+				}
+			}
+		*rsltPixel=*rsltPixel/scale+offset;
+}
 
 
 //TO DO---------------------------------------------------------------------
@@ -179,7 +221,12 @@ void computeHarrisValues(CFloatImage &srcImage, CFloatImage &harrisImage, CFloat
 
     // TODO: You may need to compute a few filtered images to start with
 printf("TODO: %s:%d\n", __FILE__, __LINE__); 
-
+	CFloatImage ix(w,h,1);
+	CFloatImage iy(w,h,1);
+	double dx[9] = {0,0,0,-1,0,1,0,0,0};
+	double dy[9] = {0,1,0,0,0,0,0,-1,0};
+	image_filter(ix,srcImage,dx,3,3,2,0);
+	image_filter(iy,srcImage,dy,3,3,2,0);
 
     for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
