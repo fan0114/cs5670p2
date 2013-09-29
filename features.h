@@ -90,4 +90,12 @@ vector<ROCPoint> computeRocCurve(vector<FeatureMatch> &matches,vector<bool> &isM
 // Compute AUC given a ROC curve
 double computeAUC(vector<ROCPoint> &results);
 
+void image_filter(CFloatImage &rsltImage, CFloatImage &srcImage,
+        const double* kernel, int knlWidth, int knlHeight,
+        double scale, double offset); 
+
+void pixel_filter(float* rsltPixel, int x, int y, CFloatImage &srcImage,
+        const double* kernel, int knlWidth, int knlHeight,
+        double scale, double offset);
+
 #endif
