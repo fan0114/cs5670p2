@@ -6,7 +6,7 @@
 #include "ImageLib/FileIO.h"
 
 #define PI 3.14159265358979323846
-
+#define pow(a,b) pow((double)a,(double)b)
 // Compute features of an image.
 
 bool computeFeatures(CFloatImage &image, FeatureSet &features, int featureType, int descriptorType) {
@@ -393,8 +393,8 @@ void ComputeMOPSDescriptors(CFloatImage &image, FeatureSet &features) {
     const int windowSize = 8;
     CFloatImage destImage(windowSize, windowSize, 1);
     CFloatImage grayImage = ConvertToGray(image);
-    CFloatImage filterImage(image.Shape().width, image.Shape().height, 1);
-    image_filter(filterImage, grayImage, gaussian5x5, 5, 5, 1, 0);
+	CFloatImage image41x41(41,41,1);
+	CFloatImage filtered41x41(41,41,1);
 
     for (vector<Feature>::iterator i = features.begin(); i != features.end(); i++) {
         Feature &f = *i;
@@ -403,81 +403,60 @@ void ComputeMOPSDescriptors(CFloatImage &image, FeatureSet &features) {
         //You'll need to compute the transform from each pixel in the 8x8 image 
         //to sample from the appropriate pixels in the 40x40 rotated window surrounding the feature
         CTransform3x3 xform;
-        xform.Translation(f.x, f.y);
+        
+		int x=f.x;
+		int y=f.y;
+		double angel=f.angleRadians;
 
-        CTransform3x3 translate;
-        translate.Translation(f.x, f.y);
+		for(int i=-20;i<21;i++)
+			for(int j=-20;j<21;j++)
+			{
+				int row=x+i;
+				int rol=y+j;
 
-        CTransform3x3 rotate;
-        rotate.Rotation(f.angleRadians);
+				int rotateX=(int)((i*cos(angel))-(j*sin(angel)))+x;
+				int rotateY=(int)((i*sin(angel))+(j*cos(angel)))+x;
 
-        CTransform3x3 scale;
-        scale[0][0] = double(41 / 8);
-        scale[1][1] = double(41 / 8);
-
-        CTransform3x3 toOrigin;
-        toOrigin.Translation(-4, -4);
-
-        xform = translate.operator * (rotate);
-        xform = xform.operator * (scale);
-        xform = xform.operator * (toOrigin);
-        /*const double toOrigin[9]=
-        {
-                1,0,-4,
-                0,1,-4,
-                0,0,1
-        };
-
-        const double scaleto41[9]=
-        {
-                double(41/8),0,0,
-    0,double(41/8),0,
-                0,0,1
-        };
-
-        const double rotate[9]=
-        {
-                cos(f.angleRadians),-sin(f.angleRadians),0,
-                sin(f.angleRadians),cos(f.angleRadians),0,
-                0,0,1
-        };
-
-        const double translate[9]=
-        {
-                1,0,f.x,
-                0,1,f.y,
-                0,0,1
-        };*/
-
+				if(rotateX<0||rotateY<0||rotateX>=image.Shape().width||rotateY>=image.Shape().height)
+					image41x41.Pixel(i,j,0)=0;
+				else
+					image41x41.Pixel(i,j,0)=grayImage.Pixel(rotateX, rotateY,0);
+			} 
+       
+			image_filter(filtered41x41, image41x41, gaussian7x7, 7, 7, 1, 0);
 
         //printf("TODO: %s:%d\n", __FILE__, __LINE__);
 
-
+			xform[0][0]=(float)41/8;
+			xform[1][1]=(float)41/8;
         //Call the Warp Global function to do the mapping
-        WarpGlobal(grayImage, destImage, xform, eWarpInterpLinear);
+        WarpGlobal(filtered41x41, destImage, xform, eWarpInterpLinear);
 
         f.data.resize(windowSize * windowSize);
 
         //TODO: fill in the feature descriptor data for a MOPS descriptor
-        float avg, std;
-        float count = 0, pfcount = 0;
-        for (int p = 0; p < windowSize; p++)
-            for (int q = 0; q < windowSize; q++) {
-                count += destImage.Pixel(p, q, 0);
-            }
-        avg = count / (windowSize * windowSize);
+        double sum=0.0,avg;
+		for(int i=0;i<8;i++)
+			for(int j=0;j<8;j++)
+			{
+				sum+=destImage.Pixel(i,j,0);
+			}
 
-        for (int p = 0; p < windowSize; p++)
-            for (int q = 0; q < windowSize; q++) {
-                float cha = fabs(destImage.Pixel(p, q, 0) - avg);
-                pfcount += pow(cha, 2);
-            }
-        pfcount = pfcount / (windowSize * windowSize);
-        pfcount = sqrt(pfcount);
-        for (int p = 0; p < windowSize; p++)
-            for (int q = 0; q < windowSize; q++) {
-                f.data[p * windowSize + q] = (destImage.Pixel(p, q, 0) - avg) / pfcount;
-            }
+			avg=(double)sum/64;
+
+			double count=0.0; 
+			for(int i=0;i<8;i++)
+				for(int j=0;j<8;j++)
+				{
+					count+=pow(destImage.Pixel(i,j,0)-avg,2);
+				}
+			double std=sqrt(count/64.0);
+
+			for(int i=0;i<8;i++)
+				for(int j=0;j<8;j++)
+				{
+					f.data[i*8+j]=(destImage.Pixel(i,j,0)-avg)/std;
+				}
         //printf("TODO: %s:%d\n", __FILE__, __LINE__);
 
     }
