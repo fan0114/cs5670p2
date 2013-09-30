@@ -168,7 +168,7 @@ void ComputeHarrisFeatures(CFloatImage &image, FeatureSet &features) {
             //TODO: Fill in feature with location and orientation data here
             //printf("TODO: %s:%d\n", __FILE__, __LINE__);
 
-            f.angleRadians = orientationImage.Pixel(x, y, 0);
+            f.angleRadians = (double) orientationImage.Pixel(x, y, 0);
             f.x = x;
             f.y = y;
             f.id = id;
@@ -188,14 +188,14 @@ void ComputeHarrisFeatures(CFloatImage &image, FeatureSet &features) {
 void image_filter(CFloatImage &rsltImage, CFloatImage &srcImage,
         const double* kernel, int knlWidth, int knlHeight,
         double scale, double offset) {
-    printf("img_filter\n");
-    fflush(stdout);
+    //printf("img_filter\n");
+    //fflush(stdout);
     int imgHeight = srcImage.Shape().height;
     int imgWidth = srcImage.Shape().width;
     // Note: copying origImg to rsltImg is NOT the solution, it does nothing!
     int x, y;
-    printf("\tloop\n");
-    fflush(stdout);
+    //printf("\tloop\n");
+    //fflush(stdout);
     for (y = 0; y < imgHeight; y++) {
         for (x = 0; x < imgWidth; x++) {
             pixel_filter(&(rsltImage.Pixel(x, y, 0)), x, y, srcImage, kernel, knlWidth, knlHeight, scale, offset);
@@ -203,8 +203,8 @@ void image_filter(CFloatImage &rsltImage, CFloatImage &srcImage,
     }
 
     //printf("TODO: %s:%d\n", __FILE__, __LINE__); 
-    printf("\tend\n");
-    fflush(stdout);
+    //printf("\tend\n");
+    //fflush(stdout);
 }
 
 void pixel_filter(float* rsltPixel, int x, int y, CFloatImage &srcImage,
@@ -223,7 +223,7 @@ void pixel_filter(float* rsltPixel, int x, int y, CFloatImage &srcImage,
             row = u + y;
             col = v + x;
             if (row >= 0 && col >= 0 && row < imgHeight && col < imgWidth) {
-                *rsltPixel += srcImage.Pixel(row, col, 0) * kernel[(u + knlWidth / 2) * knlWidth + v + knlHeight / 2];
+                *rsltPixel += srcImage.Pixel(row, col, 0) * (float) kernel[(u + knlWidth / 2) * knlWidth + v + knlHeight / 2];
             }
         }
     *rsltPixel = *rsltPixel / (float) scale + (float) offset;
@@ -405,7 +405,7 @@ void computeLocalMaxima(CFloatImage &srcImage, CByteImage &destImage) {
                 if (maxx != x || maxy != y) {
                     destImage.Pixel(x, y, 0) = 0;
                 } else {
-                    //printf("\t\tlocal max: %d %d\n", x, y);
+                    //printf("\t\tlocal max: %d %d %f\n", x, y,max);
                     destImage.Pixel(x, y, 0) = 1;
                     count++;
                 }
@@ -470,17 +470,19 @@ void ComputeMOPSDescriptors(CFloatImage &image, FeatureSet &features) {
         int y = f.y;
         double angle = f.angleRadians;
 
-        for (int i = -20; i < 21; i++)
+        for (int i = -20; i < 21; i++) {
             for (int j = -20; j < 21; j++) {
 
                 int rotateX = (int) ((i * cos(angle))-(j * sin(angle))) + x;
                 int rotateY = (int) ((i * sin(angle))+(j * cos(angle))) + y;
 
-                if (rotateX < 0 || rotateY < 0 || rotateX >= image.Shape().width || rotateY >= image.Shape().height)
-                    image41x41.Pixel(i, j, 0) = 0;
-                else
-                    image41x41.Pixel(i, j, 0) = grayImage.Pixel(rotateX, rotateY, 0);
+                if (rotateX < 0 || rotateY < 0 || rotateX >= image.Shape().width || rotateY >= image.Shape().height) {
+                    image41x41.Pixel(i + 20, j + 20, 0) = 0;
+                } else {
+                    image41x41.Pixel(i + 20, j + 20, 0) = grayImage.Pixel(rotateX, rotateY, 0);
+                }
             }
+        }
 
         image_filter(filtered41x41, image41x41, gaussian7x7, 7, 7, 1, 0);
 
@@ -493,30 +495,40 @@ void ComputeMOPSDescriptors(CFloatImage &image, FeatureSet &features) {
 
         //TODO: fill in the feature descriptor data for a MOPS descriptor
         double sum = 0.0, avg;
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 //                printf("destImage.Pixel(%d, %d, 0)=%f\n",i,j,destImage.Pixel(i, j, 0));
                 sum += (double) destImage.Pixel(i, j, 0);
             }
+        }
 
         avg = (double) sum / 64;
 
         double count = 0.0;
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 count += pow((double) destImage.Pixel(i, j, 0) - avg, (double) 2);
             }
-        //        printf("count=%f\n",count);
+        }
         double std = pow((double) (count / (double) 64.0), (double) 0.5);
 
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 f.data[i * 8 + j] = ((double) destImage.Pixel(i, j, 0) - avg) / std;
-                //                printf("f.data %d %d = %f std=%f\n", i, j, f.data[i * 8 + j], std);
+                if (f.data[i * 8 + j] != f.data[i * 8 + j]) {
+                    printf("count=%f\n", count);
+                    printf("f.data %d %d = %f std=%f\n", i, j, f.data[i * 8 + j], std);
+                }
             }
+        }
         //printf("TODO: %s:%d\n", __FILE__, __LINE__);
 
     }
+
+    //    for (vector<Feature>::iterator i = features.begin(); i != features.end(); i++) {
+    //        Feature &f = *i;
+    //        printf("mops check x %d y %d\n", f.x, f.y);
+    //    }
 }
 
 // Compute Custom descriptors (extra credit)
@@ -760,8 +772,9 @@ void addRocData(const FeatureSet &f1, const FeatureSet &f2, const vector<Feature
             isMatch.push_back(0);
         }
 
-        if (matches[i].distance > maxD)
+        if (matches[i].distance > maxD) {
             maxD = matches[i].distance;
+        }
     }
 }
 
