@@ -123,7 +123,7 @@ void dummyComputeFeatures(CFloatImage &image, FeatureSet &features) {
 }
 
 void ComputeHarrisFeatures(CFloatImage &image, FeatureSet &features) {
-    printf("ComputeHarrisFeatures\n");
+    //printf("ComputeHarrisFeatures\n");
     //Create grayscale image used for Harris detection
     CFloatImage grayImage = ConvertToGray(image);
 
@@ -138,10 +138,10 @@ void ComputeHarrisFeatures(CFloatImage &image, FeatureSet &features) {
     // computeHarrisValues() computes the harris score at each pixel position, storing the
     // result in in harrisImage. 
     // You'll need to implement this function.
-    printf("\tcomputeHarrisValues\n");
+//    printf("\tcomputeHarrisValues\n");
     fflush(stdout);
     computeHarrisValues(grayImage, harrisImage, orientationImage);
-    printf("\tlocal max\n");
+//    printf("\tlocal max\n");
     fflush(stdout);
     // Threshold the harris image and compute local maxima.  You'll need to implement this function.
     computeLocalMaxima(harrisImage, harrisMaxImage);
@@ -154,7 +154,7 @@ void ComputeHarrisFeatures(CFloatImage &image, FeatureSet &features) {
     // Loop through feature points in harrisMaxImage and fill in information needed for 
     // descriptor computation for each point above a threshold. You need to fill in id, type, 
     // x, y, and angle.
-    printf("\tloop\n");
+//    printf("\tloop\n");
     int id = 0;
     for (int y = 0; y < harrisMaxImage.Shape().height; y++) {
         for (int x = 0; x < harrisMaxImage.Shape().width; x++) {
@@ -266,7 +266,7 @@ void image_multiply(CFloatImage &targetImage, CFloatImage &a, CFloatImage &b) {
 void computeHarrisValues(CFloatImage &srcImage, CFloatImage &harrisImage, CFloatImage &orientationImage) {
     int w = srcImage.Shape().width;
     int h = srcImage.Shape().height;
-    printf("init\n");
+//    printf("init\n");
     fflush(stdout);
     // TODO: You may need to compute a few filtered images to start with
     //printf("TODO: %s:%d\n", __FILE__, __LINE__);
@@ -297,7 +297,7 @@ void computeHarrisValues(CFloatImage &srcImage, CFloatImage &harrisImage, CFloat
     float lambdamin;
     float lambdamax;
     float tan;
-    printf("\tloop\n");
+//    printf("\tloop\n");
     fflush(stdout);
     for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
@@ -321,9 +321,9 @@ void computeHarrisValues(CFloatImage &srcImage, CFloatImage &harrisImage, CFloat
             //tan = (lambdamin - H[0]) / H[1];
             orientationImage.Pixel(x, y, 0) = (float) atan2f(lambdamin - H[0], H[1]);
             if (harrisImage.Pixel(x, y, 0) != harrisImage.Pixel(x, y, 0)) {
-                printf("\t\th0=%f h1=%f h2=%f h3=%f\n", H[0], H[1], H[2], H[3]);
-                printf("\t\tlambdamin=%.10f lambdamax=%.10f\n", lambdamin, lambdamax);
-                printf("\t\tharrisImage.Pixel(%d, %d, 0)=%f\n", x, y, harrisImage.Pixel(x, y, 0));
+//                printf("\t\th0=%f h1=%f h2=%f h3=%f\n", H[0], H[1], H[2], H[3]);
+//                printf("\t\tlambdamin=%.10f lambdamax=%.10f\n", lambdamin, lambdamax);
+//                printf("\t\tharrisImage.Pixel(%d, %d, 0)=%f\n", x, y, harrisImage.Pixel(x, y, 0));
                 if (x >= 1) {
                     harrisImage.Pixel(x, y, 0) = harrisImage.Pixel(x - 1, y, 0);
                 } else {
@@ -356,26 +356,26 @@ void computeLocalMaxima(CFloatImage &srcImage, CByteImage &destImage) {
     for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
             if (srcImage.Pixel(x, y, 0) != srcImage.Pixel(x, y, 0)) {
-                printf("srcimg %d %d = %f\n", x, y, srcImage.Pixel(x, y, 0));
+//                printf("srcimg %d %d = %f\n", x, y, srcImage.Pixel(x, y, 0));
             }
             avg = avg + srcImage.Pixel(x, y, 0);
         }
     }
     avg = avg / w / h;
-    printf("\tcomputeLocalMaxima, avg %f\n", avg);
+//    printf("\tcomputeLocalMaxima, avg %f\n", avg);
 
-    //    for (int y = 0; y < h; y++) {
-    //        for (int x = 0; x < w; x++) {
-    //            stdev += powf((avg - srcImage.Pixel(x, y, 0)), (float) 2);
-    //        }
-    //    }
-    //    stdev = powf(stdev / w / h, (float) 0.5);
-    //    printf("\tcomputeLocalMaxima, stdev %f\n", stdev);
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                stdev += powf((avg - srcImage.Pixel(x, y, 0)), (float) 2);
+            }
+        }
+        stdev = powf(stdev / w / h, (float) 0.5);
+//        printf("\tcomputeLocalMaxima, stdev %f\n", stdev);
 
     //    threshold = avg + stdev / 500;
 
-    threshold = avg;
-    printf("\tcomputeLocalMaxima, threshold %f\n", threshold);
+    threshold = avg-0.01*stdev;
+//    printf("\tcomputeLocalMaxima, threshold %f\n", threshold);
 
     int count = 1e100;
     while (count > w * h / 100) {
@@ -411,7 +411,7 @@ void computeLocalMaxima(CFloatImage &srcImage, CByteImage &destImage) {
                 }
             }
         }
-        printf("\tcount=%d\n", count);
+//        printf("\tcount=%d\n", count);
         threshold += 0.0005;
     }
 }
@@ -477,8 +477,10 @@ void ComputeMOPSDescriptors(CFloatImage &image, FeatureSet &features) {
                 int rotateY = (int) ((i * sin(angle))+(j * cos(angle))) + y;
 
                 if (rotateX < 0 || rotateY < 0 || rotateX >= image.Shape().width || rotateY >= image.Shape().height) {
+                    //printf("img41 %d %d is 0\n", i + 20, j + 20);
                     image41x41.Pixel(i + 20, j + 20, 0) = 0;
                 } else {
+                    //printf("img41 %d %d is %f\n", i + 20, j + 20, grayImage.Pixel(rotateX, rotateY, 0));
                     image41x41.Pixel(i + 20, j + 20, 0) = grayImage.Pixel(rotateX, rotateY, 0);
                 }
             }
@@ -488,8 +490,39 @@ void ComputeMOPSDescriptors(CFloatImage &image, FeatureSet &features) {
 
         //printf("TODO: %s:%d\n", __FILE__, __LINE__);
 
-        //Call the Warp Global function to do the mapping
-        WarpGlobal(filtered41x41, destImage, xform, eWarpInterpLinear);
+        //        for (int i = 0; i < 3; i++) {
+        //            for (int j = 0; j < 3; j++) {
+        //                xform[i][j] = (double) 0;
+        //            }
+        //        }
+        //        xform[0][0] = (double) 8 / (double) 41;
+        //        xform[1][1] = (double) 8 / (double) 41;
+        //        xform[2][2] = (double) 1;
+        //
+        //        //Call the Warp Global function to do the mapping
+        //        WarpGlobal(filtered41x41, destImage, xform, eWarpInterpLinear);
+
+        for (int i = 0; i < windowSize; i++) {
+            for (int j = 0; j < windowSize; j++) {
+                int newi = (int) ((double) i * 41 / windowSize);
+                if (newi < 0) {
+                    newi = 0;
+                }
+                if (newi >= 41) {
+                    newi = 41;
+                }
+                int newj = (int) ((double) j * 41 / windowSize);
+                if (newj < 0) {
+                    newj = 0;
+                }
+                if (newj >= 41) {
+                    newj = 41;
+                }
+                destImage.Pixel(i, j, 0) = filtered41x41.Pixel(newi, newj, 0);
+//                printf("filtered41x41.Pixel(%d, %d, 0)=%f\n", newi, newj, filtered41x41.Pixel(newi, newj, 0));
+//                printf("destImage.Pixel(%d, %d, 0)=%f\n", i, j, destImage.Pixel(i, j, 0));
+            }
+        }
 
         f.data.resize(windowSize * windowSize);
 
@@ -497,7 +530,7 @@ void ComputeMOPSDescriptors(CFloatImage &image, FeatureSet &features) {
         double sum = 0.0, avg;
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                //                printf("destImage.Pixel(%d, %d, 0)=%f\n",i,j,destImage.Pixel(i, j, 0));
+                //printf("destImage.Pixel(%d, %d, 0)=%f\n", i, j, destImage.Pixel(i, j, 0));
                 sum += (double) destImage.Pixel(i, j, 0);
             }
         }
@@ -515,10 +548,11 @@ void ComputeMOPSDescriptors(CFloatImage &image, FeatureSet &features) {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 f.data[i * 8 + j] = ((double) destImage.Pixel(i, j, 0) - avg) / std;
-                if (f.data[i * 8 + j] != f.data[i * 8 + j]) {
-                    printf("count=%f\n", count);
-                    printf("f.data %d %d = %f std=%f\n", i, j, f.data[i * 8 + j], std);
-                }
+//                if (f.data[i * 8 + j] != f.data[i * 8 + j]) {
+//                    printf("sum=%f avg=%f count=%f\n", sum, avg, count);
+//                    printf("f.data %d %d = %f std=%f\n", i, j, f.data[i * 8 + j], std);
+//                    exit(-1);
+//                }
             }
         }
         //printf("TODO: %s:%d\n", __FILE__, __LINE__);
@@ -544,7 +578,7 @@ void ComputeCustomDescriptors(CFloatImage &image, FeatureSet &features) {
 // the second image.
 
 void ssdMatchFeatures(const FeatureSet &f1, const FeatureSet &f2, vector<FeatureMatch> &matches) {
-    printf("ssdMatchFeatures\n");
+//    printf("ssdMatchFeatures\n");
     int m = f1.size();
     int n = f2.size();
 
