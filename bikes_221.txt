@@ -1,0 +1,36 @@
+computing features for image 1
+	count=3479
+computing features for image 2
+	count=3713
+	count=1839
+computing features for image 3
+	count=3834
+	count=1437
+computing features for image 4
+	count=4259
+	count=907
+computing features for image 5
+	count=4704
+	count=645
+computing features for image 6
+	count=5278
+	count=437
+matching image 1 with image 2
+
+Matching features.......
+matching image 1 with image 3
+
+Matching features.......
+matching image 1 with image 4
+
+Matching features.......
+matching image 1 with image 5
+
+Matching features.......
+matching image 1 with image 6
+
+Matching features.......
+
+average error: 300.002451 pixels
+
+average AUC: 0.487309

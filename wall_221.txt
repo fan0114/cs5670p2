@@ -1,0 +1,143 @@
+computing features for image 1
+	count=6265
+	count=6157
+	count=6032
+	count=5896
+	count=5764
+	count=5654
+	count=5538
+	count=5438
+	count=5314
+	count=5216
+	count=5105
+	count=5004
+	count=4898
+	count=4792
+	count=4664
+	count=4545
+	count=4428
+	count=4308
+	count=4183
+	count=4068
+	count=3950
+	count=3844
+	count=3736
+	count=3636
+	count=3530
+	count=3410
+computing features for image 2
+	count=5318
+	count=5173
+	count=5039
+	count=4882
+	count=4739
+	count=4589
+	count=4460
+	count=4303
+	count=4166
+	count=4014
+	count=3881
+	count=3755
+	count=3642
+	count=3523
+	count=3373
+	count=3240
+	count=3113
+	count=2959
+computing features for image 3
+	count=5274
+	count=5126
+	count=4967
+	count=4815
+	count=4679
+	count=4529
+	count=4369
+	count=4233
+	count=4078
+	count=3949
+	count=3811
+	count=3679
+	count=3548
+	count=3416
+	count=3277
+	count=3149
+	count=3013
+	count=2898
+computing features for image 4
+	count=5356
+	count=5204
+	count=5069
+	count=4918
+	count=4765
+	count=4627
+	count=4498
+	count=4341
+	count=4198
+	count=4062
+	count=3935
+	count=3783
+	count=3632
+	count=3507
+	count=3395
+	count=3293
+	count=3173
+	count=3056
+	count=2940
+computing features for image 5
+	count=5369
+	count=5233
+	count=5098
+	count=4922
+	count=4781
+	count=4636
+	count=4485
+	count=4363
+	count=4214
+	count=4068
+	count=3922
+	count=3786
+	count=3638
+	count=3507
+	count=3366
+	count=3255
+	count=3139
+	count=3000
+	count=2884
+computing features for image 6
+	count=5360
+	count=5199
+	count=5030
+	count=4851
+	count=4688
+	count=4536
+	count=4399
+	count=4261
+	count=4123
+	count=3976
+	count=3855
+	count=3719
+	count=3584
+	count=3452
+	count=3316
+	count=3191
+	count=3051
+	count=2927
+matching image 1 with image 2
+
+Matching features.......
+matching image 1 with image 3
+
+Matching features.......
+matching image 1 with image 4
+
+Matching features.......
+matching image 1 with image 5
+
+Matching features.......
+matching image 1 with image 6
+
+Matching features.......
+
+average error: 212.926676 pixels
+
+average AUC: 0.593896
